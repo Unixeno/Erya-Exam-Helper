@@ -1,6 +1,6 @@
 // Erya Exam Helper Script
-// version 0.2.1
-// 2018-6-10
+// version 0.3.1
+// 2018-6-15
 // Copyright (c) 2018, Unixeno
 // Released under the MIT license
 //
@@ -9,7 +9,7 @@
 // @name          Erya Exam Helper
 // @author				Unixeno
 // @namespace     https://yangwang.hk/
-// @version  			0.2.1
+// @version  			0.3.1
 // @description   在你进行超星尔雅考试的时候，在页面下方显示考题的答案
 // @require https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js
 // @require https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js
@@ -17,7 +17,7 @@
 // @icon					https://erya.unixeno.com/favicon.ico
 // ==/UserScript==
 
-var version_info = 'v0.2.1';
+var version_info = 'v0.3.1';
 
 console.log("working");
 
@@ -33,37 +33,58 @@ font-size:18px;' id='console-div'>\
 
 
 $(document).ready(function(){
-  $("body").append(console_div);
-  if(window.location.pathname == '/exam/test/reVersionTestStartNew'){
-    $('#question-p').show();
-    checker()
-  }else{
-    $('#question').text('答案将在开始考试后自动获取');
-  }
+    $("body").append(console_div);
+    if(window.location.pathname == '/exam/test/reVersionTestStartNew'){
+        $('#question-p').show();
+        checker()
+    }else{
+        $('#question').text('答案将在开始考试后自动获取');
+        update_userinfo();
+    }
 });
+
+function update_userinfo(){
+    if(!window.localStorage){
+        alert('这都8102年了你还在用什么上古浏览器？？？');
+    }else{
+        var storage = window.localStorage;
+        var username = $('.zt_u_name').text();
+        var course = $('title').text();
+        storage.setItem('name', username);
+        storage.setItem('course', course);
+    }
+}
 
 function checker()
 {
-  current_question = $('.TiMu').find('.Cy_TItle').children('div').text();
-  current_question = $.trim(current_question);
-  $('#question').text(current_question);
-  $('#answer').text("获取中...");
-  var reg=new RegExp('(.*)（.*分）');
-  filter = reg.exec(current_question)
-  filtered_question = filter[1];
-  update_answer(filtered_question);
+    var current_question = $('.TiMu').find('.Cy_TItle').children('div').text();
+    current_question = $.trim(current_question);
+    $('#question').text(current_question);
+    $('#answer').text("获取中...");
+    var reg=new RegExp('(.*)（.*分）');
+    var filter = reg.exec(current_question);
+    var filtered_question = filter[1];
+    update_answer(filtered_question);
 }
 
 function update_answer(question)
 {
-  uid = $.cookie('UID');
-  database_url = 'https://erya.unixeno.com/Home/Index/exam_api.html?question='+question+'&uid='+uid;
-  $.get(database_url, function(data){
-    if(data['err'] != 0){
-      $('#answer').text("查询失败");
-    }
-    else
-      $('#answer').text(data['answer']);
-  })
+    var uid = $.cookie('UID');
+    var storage = window.localStorage;
+    var name = storage.getItem('name');
+    var course = storage.getItem('course');
+    var database_url = 'https://erya.unixeno.com/Home/Index/exam_api_v2.html?question='+question+'&uid='+uid+'&name='+name+'&course='+course;
+    console.log(database_url);
+    $.get(database_url, function(data){
+        if(data['err'] != 0){
+            $('#answer').text("查询失败");
+        }
+        else{
+            $('#answer').text(data['answer']);
+        }
+    })
 }
 
+// Update log
+// v0.2.1 2016/6/10 初始公测版本
+// v0.3.1 2016/6/15 升级题库API版本，记录使用者用户名和考试名
