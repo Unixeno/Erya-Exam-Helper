@@ -1,6 +1,6 @@
 // Erya Exam Helper Script
-// version 0.3.1
-// 2018-6-15
+// version 0.4.1
+// 2018-6-17
 // Copyright (c) 2018, Unixeno
 // Released under the MIT license
 //
@@ -9,7 +9,7 @@
 // @name          Erya Exam Helper
 // @author				Unixeno
 // @namespace     https://yangwang.hk/
-// @version  			0.3.1
+// @version  			0.4.1
 // @description   在你进行超星尔雅考试的时候，在页面下方显示考题的答案
 // @require https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js
 // @require https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.min.js
@@ -17,7 +17,7 @@
 // @icon					https://erya.unixeno.com/favicon.ico
 // ==/UserScript==
 
-var version_info = 'v0.3.1';
+var version_info = 'v0.4.1';
 
 console.log("working");
 
@@ -70,14 +70,18 @@ function checker()
 function update_answer(question)
 {
     var uid = $.cookie('UID');
+    var fid = $.cookie('fid');
     var storage = window.localStorage;
     var name = storage.getItem('name');
     var course = storage.getItem('course');
-    var database_url = 'https://erya.unixeno.com/Home/Index/exam_api_v2.html?question='+question+'&uid='+uid+'&name='+name+'&course='+course;
+    var database_url = 'https://erya.unixeno.com/Home/Index/exam_api_v3.html?question='+question+'&uid='+uid+'&name='+name+'&course='+course+'&fid='+fid;
     console.log(database_url);
     $.get(database_url, function(data){
         if(data['err'] != 0){
-            $('#answer').text("查询失败");
+			if(data['err'] == -1)
+				$('#answer').text("题库没有查到这个题的答案哦:(，或许你可以联系一下作者？");
+			else
+				$('#answer').text("未知错误，你可以联系作者反馈");
         }
         else{
             $('#answer').text(data['answer']);
@@ -88,3 +92,4 @@ function update_answer(question)
 // Update log
 // v0.2.1 2016/6/10 初始公测版本
 // v0.3.1 2016/6/15 升级题库API版本，记录使用者用户名和考试名
+// v0.4.1 2016/6/17	升级API至v3，记录学校id用于日志分析
